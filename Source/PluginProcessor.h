@@ -72,7 +72,7 @@ public:
     juce::File root, savedFile;
     juce::dsp::Convolution convolver;
 
-    NormalisableRange<int> delayTimeRange = NormalisableRange<int>(0, 22100, 1);
+    NormalisableRange<float> delayTimeRange = NormalisableRange<float>(0.0f, 22100.0f, 0.1f);
 
 private:
     //==============================================================================

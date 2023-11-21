@@ -111,7 +111,7 @@ void SimpleDelayLineAudioProcessor::prepareToPlay (double sampleRate, int sample
     spec.numChannels = getTotalNumOutputChannels();
 
     double maxDelay = 2;
-    int defaultDelayInSamples = 100;
+    float defaultDelayInSamples = 100;
     double defaultCutoff = 3000.0;
 
     int defaultInterpolationIndex = 0; // Linear
@@ -218,7 +218,7 @@ void SimpleDelayLineAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 
 void SimpleDelayLineAudioProcessor::updateDelayTime(double sampleRate) 
 {
-    int delay = *tree.getRawParameterValue("delay");
+    float delay = *tree.getRawParameterValue("delay");
     delayProcessor.setDelayTimeInSamples(delay, sampleRate);
     
     /*
@@ -288,7 +288,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleDelayLineAudioProcesso
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back(std::make_unique<juce::AudioParameterBool>("convolutionToggle", "Convolution Enabled", true));
-    params.push_back(std::make_unique<juce::AudioParameterInt>("delay", "Delay", 0, 22100, 1));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("delay", "Delay", 0.0f, 22100.0f, 0.1f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("delayMix", "Delay Mix", 0.0f, 1.0f, 0.5f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("distance", "Distance", 0.1f, 20.0f, 1.0f));
     params.push_back(std::make_unique<juce::AudioParameterInt>("interpolationType", "DelayLineInterpolationType", 0, 2, 0));

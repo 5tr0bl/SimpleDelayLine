@@ -87,7 +87,7 @@ void DelayProcessor::setDelayTime(double delayTimeInSeconds, double sampleRate) 
     currentDelayTime = clampedDelayTime; // in seconds
 }
 
-void DelayProcessor::setDelayTimeInSamples(int delayTimeInSamples, double sampleRate) {
+void DelayProcessor::setDelayTimeInSamples(float delayTimeInSamples, double sampleRate) {
     // double clampedDelayTimeInSamples = juce::jlimit(0.0, maxDelayTime * sampleRate, delayTimeInSamples * sampleRate);
     delayLine.setDelay(delayTimeInSamples);
     currentDelayInSamples = delayTimeInSamples;

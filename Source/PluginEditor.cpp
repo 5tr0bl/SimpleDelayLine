@@ -53,6 +53,7 @@ SimpleDelayLineAudioProcessorEditor::SimpleDelayLineAudioProcessorEditor (Simple
     //convolutionButton.setToggleable(true);
     convolutionButton.onClick = [this]() {};
     convolutionButton.setButtonText("Enable Convolution");
+    convolutionButton.setEnabled(false);
     addAndMakeVisible(convolutionButton);
     convolutionButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(tree, "convolutionToggle", convolutionButton);
 
@@ -60,6 +61,7 @@ SimpleDelayLineAudioProcessorEditor::SimpleDelayLineAudioProcessorEditor (Simple
     delayMixKnob.setRange(0.0, 1.0, 0.01);
     delayMixKnob.setValue(0.5);
     delayMixKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, delayMixKnob.getWidth(), 25);
+    delayMixKnob.setEnabled(false);
     addAndMakeVisible(delayMixKnob);
     delayMixKnobAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(tree, "delayMix", delayMixKnob);
 

@@ -21,7 +21,7 @@ public:
     void DelayProcessor::setHRIR(const juce::File& impulseResponse);
     void DelayProcessor::setInterpolationType(int comboBoxChoice, juce::dsp::ProcessSpec& spec);
     void setDelayTime(double delayTimeInSeconds, double sampleRate);
-    void DelayProcessor::setDelayTimeInSamples(int delayTimeInSamples, double sampleRate);
+    void DelayProcessor::setDelayTimeInSamples(float delayTimeInSamples, double sampleRate);
     void DelayProcessor::setMaxDelayTime(double maxDelayTimeInSeconds, double sampleRate);
     void DelayProcessor::prepare(juce::dsp::ProcessSpec& spec);
     void processBlock(juce::dsp::AudioBlock<float>& block);
@@ -62,7 +62,7 @@ public:
 
 private:
     double maxDelayTime;
-    double currentDelayInSamples;
+    float currentDelayInSamples;
     double currentDelayTime; // in seconds
     float distance, mix;
 

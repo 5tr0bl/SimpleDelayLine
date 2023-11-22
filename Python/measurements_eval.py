@@ -14,8 +14,17 @@ def find_input_reference(wav_file_path, path_references):
     # FileNotFoundError
     print(f"No input reference found for {wav_file_path}")
     return None
+
+## Local scope problems... do not use right now
+def pad_length_mismatch(signal_a, signal_b):
+    # Pad zeros to the shorter signal to make both signals have the same length
+    max_length = max(signal_a.n_samples, signal_b.n_samples)
+    if signal_a.n_samples < max_length:
+        pf.dsp.pad_zeros(signal_a, max_length - signal_a.n_samples)
+    if signal_b.n_samples < max_length:
+        pf.dsp.pad_zeros(signal_b, max_length - signal_b.n_samples)
         
-def process_and_plot_wav(wav_file_path, plot_path):
+def process_and_plot_wav(wav_file_path): #, plot_path):
     path_references = "Python\ReferenceInputs"
     file_path = os.path.splitext(os.path.basename(wav_file_path))[0]
     print(f"Processing file: {file_path}")
@@ -26,7 +35,7 @@ def process_and_plot_wav(wav_file_path, plot_path):
                                         find_input_reference(wav_file_path=file_path,
                                                              path_references=path_references))
     input_signal = pf.io.read_audio(input_reference_path)
-
+    
     # Pad zeros to the shorter signal to make both signals have the same length
     max_length = max(output_signal.n_samples, input_signal.n_samples)
     if output_signal.n_samples < max_length:
@@ -82,4 +91,4 @@ for measurement_path, plot_path in zip(measurement_paths, plots_paths):
             print(f"Processing file: {wav_file_path}")
 
             # Process and plot the wav file
-            process_and_plot_wav(wav_file_path, plot_path)
+            process_and_plot_wav(wav_file_path) #, plot_path)

@@ -45,8 +45,15 @@ def process_and_plot_wav(wav_file_path): #, plot_path):
     print(f"Length Output: {output_signal.n_samples} Samples.")
     print(f"Length Input: {input_signal.n_samples} Samples.")
 
-    # divide output/input to obtain the transfer function
-    transfer_function = output_signal / input_signal # regularize/invert H here?
+    # get regularized inverse of input for --- H = (1/X) * Y
+    input_signal_reg_inv = pf.dsp.regularized_spectrum_inversion(input_signal,
+                                                                 freq_range=(0, input_signal.sampling_rate/2))
+
+    # divide output/input to obtain the transfer function H
+    #transfer_function = output_signal / input_signal
+
+    # H = (1/X) * Y
+    transfer_function = input_signal_reg_inv * output_signal
 
     pf.plot.two_d.freq_group_delay_2d(transfer_function) # how to plot as graph in pyfar?
 

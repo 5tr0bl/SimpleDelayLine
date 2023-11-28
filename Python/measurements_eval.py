@@ -1,5 +1,4 @@
 #import numpy as np
-#import numpy as np
 import os
 #import plotly.graph_objects as go
 import pyfar as pf
@@ -55,26 +54,10 @@ def process_and_plot_wav(wav_file_path): #, plot_path):
     # H = (1/X) * Y
     transfer_function = input_signal_reg_inv * output_signal
 
-    pf.plot.two_d.freq_group_delay_2d(transfer_function) # how to plot as graph in pyfar?
-
-    '''
-    frequencies = signal.frequencies
-    fft = np.fft.fft(signal.time)
-    magnitude_spectrum = np.abs(fft)#signal.freq_raw.T 
-    phase = np.angle(fft)
-
-    # Create a Plotly figure for magnitude spectrum
-    fig_magnitude = go.Figure()
-    fig_magnitude.add_trace(go.Scatter(x=frequencies, y=magnitude_spectrum, mode='lines'))
-    fig_magnitude.update_layout(title=f'Magnitude Spectrum - {os.path.basename(wav_file_path)}')
-    fig_magnitude.write_html(os.path.join(plot_path, f'magnitude_spectrum_{file_path}.html'))
-
-    # Create a Plotly figure for phase
-    fig_phase = go.Figure()
-    fig_phase.add_trace(go.Scatter(x=frequencies, y=phase.real, mode='lines'))
-    fig_phase.update_layout(title=f'Phase Information - {os.path.basename(wav_file_path)}')
-    fig_phase.write_html(os.path.join(plot_path, f'phase_information_{file_path}.html'))
-    '''
+    # graph plotting
+    pf.plot.freq(transfer_function)
+    # plotting in 2D plane
+    #pf.plot.two_d.freq_group_delay_2d(transfer_function)
 
 path_linear_measurements = "Python\Measurements\Linear"
 path_thiran_measurements = "Python\Measurements\Thiran"
@@ -85,6 +68,12 @@ path_thiran_plots = "Python\Plots\Thiran"
 path_lagrange_plots = "Python\Plots\Lagrange3rd"
 plots_paths = [path_linear_plots, path_thiran_plots, path_lagrange_plots]
 
+# single measurement plotting 
+#process_and_plot_wav("Python\Measurements\Linear\dirac_0.0samples_linear.wav")
+#process_and_plot_wav("Python\Measurements\Thiran\dirac_0.0samples_thiran.wav")
+#process_and_plot_wav("Python\Measurements\Lagrange3rd\dirac_0.0samples_lagrange.wav")
+
+# loop over all measurements
 for measurement_path, plot_path in zip(measurement_paths, plots_paths):
     print(f"Processing files in {measurement_path}:")
     

@@ -9,26 +9,36 @@
 */
 
 #include "DelayProcessor.h"
+#include "DelayLineBase.h"
+
 
 /* sampleRate gets passed ONCE upon calling constructor */
 
 DelayProcessor::DelayProcessor() {
-    // Default constructor implementation, if needed.
-    maxDelayTime = 4;
+    maxDelayTime = 2;
     delayLine = juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd>();
-
+    delayLineBase = std::make_unique<Lagrange3rdDelayLine>();
 }
 
-DelayProcessor::DelayProcessor(double maxDelayTimeInSeconds, double sampleRate) :
-    maxDelayTime(maxDelayTimeInSeconds),
-    delayLine(sampleRate * maxDelayTimeInSeconds) 
+DelayProcessor::DelayProcessor(double maxDelayTimeInSeconds, double sampleRate, int interpolationType) :
+    maxDelayTime(maxDelayTimeInSeconds)
+    //delayLine(sampleRate * maxDelayTimeInSeconds) 
 {
-    delayLine.setMaximumDelayInSamples(sampleRate * maxDelayTimeInSeconds);
-    *filter.state = *dsp::FilterDesign<float>::designFIRLowpassWindowMethod(1000.0, sampleRate, 21, dsp::WindowingFunction<float>::hamming);
+    if (interpolationType == 1)
+        delayLineBase = std::make_unique<ThiranDelayLine>();
+    else if (interpolationType == 2) {
+        //delayLine = juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd>();
+        delayLineBase = std::make_unique<Lagrange3rdDelayLine>();
+    }
+    else
+        delayLineBase = std::make_unique<LinearDelayLine>();
+    
+    setMaxDelayTime(maxDelayTimeInSeconds, sampleRate);
+    *filter.state = *dsp::FilterDesign<float>::designFIRLowpassWindowMethod(20000.0, sampleRate, 21, dsp::WindowingFunction<float>::hamming);
 }
 
 DelayProcessor::~DelayProcessor() {
-
+    //delete delayLineBase->delayLine;
 }
 
 void DelayProcessor::setFirFilter(double freq, double sampleRate) {
@@ -52,54 +62,52 @@ void DelayProcessor::setHRIR(const juce::File& impulseResponse) {
         {
             auto b = impulseResponse.getFullPathName();
             // Handle file open error
-            // Print an error message, throw an exception, or handle it in your preferred way
         }
     }
     else
     {
         // Handle file not found error
-        // Print an error message, throw an exception, or handle it in your preferred way
     }
 }
 
 void DelayProcessor::setInterpolationType(int comboBoxChoice, juce::dsp::ProcessSpec& spec) {
-    /*
-    delete delayLine;
     switch (comboBoxChoice) {
     case 0:
     default:
-        delayLine = juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Linear>();
+        delayLineBase = std::make_unique<LinearDelayLine>();
         break;
     case 1:
-        delayLine = juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Thiran>();
+        delayLineBase = std::make_unique<ThiranDelayLine>();
         break;
     case 2:
-        delayLine = juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd>();
+        delayLineBase = std::make_unique<Lagrange3rdDelayLine>();
         break;
-    }
-    */
+    } 
 }
 
 void DelayProcessor::setDelayTime(double delayTimeInSeconds, double sampleRate) {
-    // Ensure the delay time is within the valid range
     double clampedDelayTime = juce::jlimit(0.0, maxDelayTime, delayTimeInSeconds);
     delayLine.setDelay(clampedDelayTime * sampleRate);
+    delayLineBase->setDelay(clampedDelayTime * sampleRate);
     currentDelayTime = clampedDelayTime; // in seconds
 }
 
 void DelayProcessor::setDelayTimeInSamples(float delayTimeInSamples, double sampleRate) {
     // double clampedDelayTimeInSamples = juce::jlimit(0.0, maxDelayTime * sampleRate, delayTimeInSamples * sampleRate);
     delayLine.setDelay(delayTimeInSamples);
+    delayLineBase->setDelay(delayTimeInSamples);
     currentDelayInSamples = delayTimeInSamples;
 }
 
 void DelayProcessor::setMaxDelayTime(double maxDelayTimeInSeconds, double sampleRate) {
     delayLine.setMaximumDelayInSamples(sampleRate * maxDelayTimeInSeconds);
+    delayLineBase->setMaximumDelayInSamples(sampleRate * maxDelayTimeInSeconds);
     maxDelayTime = maxDelayTimeInSeconds;
 }
 
 void DelayProcessor::prepare(juce::dsp::ProcessSpec& spec) {
-    delayLine.prepare(spec);
+    //delayLine.prepare(spec);
+    delayLineBase->prepare(spec);
     setMaxDelayTime(maxDelayTime, spec.sampleRate);
     filter.reset();
     filter.prepare(spec);
@@ -107,15 +115,15 @@ void DelayProcessor::prepare(juce::dsp::ProcessSpec& spec) {
     convolver.prepare(spec);
 }
 
-void DelayProcessor::processBlock(juce::dsp::AudioBlock<float>& block) {
-    // Process the block of audio samples using the delay line
+// Not used
+void DelayProcessor::processBlock(juce::dsp::AudioBlock<float>& block) { 
     delayLine.process(juce::dsp::ProcessContextReplacing<float>(block));
     //convolver.process(block);
 }
 
 void DelayProcessor::process(juce::dsp::ProcessContextReplacing<float>& context) {
-    // Process the block of audio samples using the delay line
-    delayLine.process(context);
+    delayLineBase->process(context);
+    //delayLine.process(context);
     filter.process(context);
     convolver.process(context);
 }

@@ -10,11 +10,12 @@
 
 #pragma once
 #include <JuceHeader.h>
+#include "DelayLineBase.h"
 
 class DelayProcessor {
 public:
     DelayProcessor::DelayProcessor();
-    DelayProcessor::DelayProcessor(double maxDelayTimeInSeconds, double sampleRate);
+    DelayProcessor::DelayProcessor(double maxDelayTimeInSeconds, double sampleRate, int interpolationType);
     DelayProcessor::~DelayProcessor();
 
     void DelayProcessor::setFirFilter(double freq, double sampleRate);
@@ -67,4 +68,5 @@ private:
     float distance, mix;
 
     juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd> delayLine;
+    std::unique_ptr<DelayLineBase> delayLineBase;
 };

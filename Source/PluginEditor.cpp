@@ -57,16 +57,8 @@ SimpleDelayLineAudioProcessorEditor::SimpleDelayLineAudioProcessorEditor (Simple
     addAndMakeVisible(convolutionButton);
     convolutionButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(tree, "convolutionToggle", convolutionButton);
 
-    delayMixKnob.setSliderStyle(Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-    delayMixKnob.setRange(0.0, 1.0, 0.01);
-    delayMixKnob.setValue(0.5);
-    delayMixKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, delayMixKnob.getWidth(), 25);
-    delayMixKnob.setEnabled(false);
-    addAndMakeVisible(delayMixKnob);
-    delayMixKnobAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(tree, "delayMix", delayMixKnob);
-
     interpolationTypeComboBox.addItemList({ "Linear", "Thiran", "Lagrange3rd"}, 1);
-    interpolationTypeComboBox.setSelectedItemIndex(0);
+    interpolationTypeComboBox.setSelectedItemIndex(2);
     interpolationTypeComboBox.onChange = [this]() {
         DBG("DelayLine Interpolation Type: " << interpolationTypeComboBox.getItemText(interpolationTypeComboBox.getSelectedItemIndex()));
         };
@@ -113,12 +105,6 @@ void SimpleDelayLineAudioProcessorEditor::resized()
     const auto convBtnWidth = width * 0.3;
     const auto convBtnHeight = convBtnWidth;
     convolutionButton.setBounds(convBtnX, convBtnY, convBtnWidth, convBtnHeight);
-
-    const auto delMixKnbX = width * 0.5;
-    const auto delMixKnbY = 0;
-    const auto delMixKnbWidth = width * 0.2;
-    const auto delMixKnbHeight = delMixKnbWidth;
-    delayMixKnob.setBounds(delMixKnbX, delMixKnbY, delMixKnbWidth, delMixKnbHeight);
 
     interpolationTypeComboBox.setBounds(285,
                                         100,

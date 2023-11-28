@@ -12,6 +12,10 @@
 #include "DelayProcessor.h"
 
 const float SONIC_SPEED = 343.0f;
+const double MAX_DELAY = 2;
+const float DEFAULT_DELAY_IN_SAMPLES = 100;
+const double DEFAULT_CUTOFF = 3000.0;
+const int DEFAULT_INTERPOLATION_INDEX = 2;
 
 
 //==============================================================================
@@ -29,6 +33,7 @@ public:
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+    void SimpleDelayLineAudioProcessor::initDelayProcessors(double sampleRate, juce::dsp::ProcessSpec& spec, int interpolationType);
     void releaseResources() override;
 
    #ifndef JucePlugin_PreferredChannelConfigurations
@@ -78,8 +83,10 @@ private:
     //==============================================================================
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
     
-    DelayProcessor directProcessor;
-    DelayProcessor delayProcessor;
+    //DelayProcessor directProcessor;
+    //DelayProcessor delayProcessor;
+    std::unique_ptr<DelayProcessor> directProcessor;
+    std::unique_ptr<DelayProcessor> delayProcessor;
 
     juce::File irFileFrontal, irFileLateral;
 

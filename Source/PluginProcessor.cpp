@@ -110,36 +110,37 @@ void SimpleDelayLineAudioProcessor::prepareToPlay (double sampleRate, int sample
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = getTotalNumOutputChannels();
 
-    double maxDelay = 2;
-    float defaultDelayInSamples = 100;
-    double defaultCutoff = 3000.0;
-
-    int defaultInterpolationIndex = 0; // Linear
-    interpolationType = defaultInterpolationIndex;
+    interpolationType = DEFAULT_INTERPOLATION_INDEX;
 
     juce::File irFileFrontal("C:\\Users\\Micha\\source\\repos\\SimpleDelayLine\\Resources\\hrir_frontal.wav");
     bool a = irFileFrontal.existsAsFile();
-    directProcessor.setMaxDelayTime(maxDelay, sampleRate);
-    //directProcessor.setDelayTime(0.01, sampleRate);
-    directProcessor.setFirFilter(20000.0, sampleRate);
-    //directProcessor.setDistance(1.0f, SONIC_SPEED, sampleRate);
-    directProcessor.setDelayTimeInSamples(0, sampleRate);
-    directProcessor.setHRIR(irFileFrontal);
-    directProcessor.prepare(spec);
 
     juce::File irFileLateral("C:\\Users\\Micha\\source\\repos\\SimpleDelayLine\\Resources\\hrir_lateral.wav");
     bool c = irFileLateral.existsAsFile();
-    // DelayProcessor delayProcessor(maxDelay, sampleRate);
-    delayProcessor.setMaxDelayTime(maxDelay, sampleRate);
-    //delayProcessor.setDelayTime(defaultDelayTime, sampleRate);
-    delayProcessor.setFirFilter(defaultCutoff, sampleRate);
-    //delayProcessor.setDistance(8.0f, SONIC_SPEED, sampleRate);
-    delayProcessor.setDelayTimeInSamples(defaultDelayInSamples, sampleRate);
-    delayProcessor.setHRIR(irFileLateral);
-    delayProcessor.prepare(spec);
+    
+    initDelayProcessors(sampleRate, spec, interpolationType);
 
     //convolver.reset();
     //convolver.prepare(spec);
+}
+
+void SimpleDelayLineAudioProcessor::initDelayProcessors(double sampleRate, juce::dsp::ProcessSpec& spec,
+                                                        int interpolationType) {
+    // in the end iterate over an array of DelayProcessors
+    directProcessor = std::make_unique<DelayProcessor>(MAX_DELAY, sampleRate, interpolationType);
+    delayProcessor = std::make_unique<DelayProcessor>(MAX_DELAY, sampleRate, interpolationType);
+
+    directProcessor->setMaxDelayTime(MAX_DELAY, sampleRate);
+    directProcessor->setFirFilter(20000.0, sampleRate);
+    directProcessor->setDelayTimeInSamples(0, sampleRate);
+    directProcessor->setHRIR(irFileFrontal);
+    directProcessor->prepare(spec);
+
+    delayProcessor->setMaxDelayTime(MAX_DELAY, sampleRate);
+    delayProcessor->setFirFilter(DEFAULT_CUTOFF, sampleRate);
+    delayProcessor->setDelayTimeInSamples(DEFAULT_DELAY_IN_SAMPLES, sampleRate);
+    delayProcessor->setHRIR(irFileLateral);
+    delayProcessor->prepare(spec);
 }
 
 void SimpleDelayLineAudioProcessor::releaseResources()
@@ -199,8 +200,8 @@ void SimpleDelayLineAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     auto delayedContext = dsp::ProcessContextReplacing<float>(delayBlock);
 
     updateDelayTime(sampleRate);
-    directProcessor.process(directContext);
-    delayProcessor.process(delayedContext);
+    directProcessor->process(directContext);
+    delayProcessor->process(delayedContext);
 
     //// Add this when mixing between the two is desired
     // float mixLevel = delayProcessor.getMix();
@@ -219,14 +220,7 @@ void SimpleDelayLineAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 void SimpleDelayLineAudioProcessor::updateDelayTime(double sampleRate) 
 {
     float delay = *tree.getRawParameterValue("delay");
-    delayProcessor.setDelayTimeInSamples(delay, sampleRate);
-    
-    /*
-    float distance = *tree.getRawParameterValue("distance");
-    delayProcessor.setDistance(distance, SONIC_SPEED, sampleRate);
-    float mixLevel = *tree.getRawParameterValue("delayMix");
-    delayProcessor.setMix(mixLevel);
-    */
+    delayProcessor->setDelayTimeInSamples(delay, sampleRate);
 }
 
 void SimpleDelayLineAudioProcessor::updateInterpolationType() {
@@ -234,6 +228,7 @@ void SimpleDelayLineAudioProcessor::updateInterpolationType() {
     if (interpolationTypeGUI != interpolationType)
     {
         interpolationType = interpolationTypeGUI;
+        initDelayProcessors(getSampleRate(), spec, interpolationType);
         // call each DelayProcessors setInterpolationType() 
     }
 }
@@ -241,7 +236,7 @@ void SimpleDelayLineAudioProcessor::updateInterpolationType() {
 void SimpleDelayLineAudioProcessor::updateFilter(double sampleRate)
 {
     //float freq = *tree.getRawParameterValue("cutoff");
-    delayProcessor.setFirFilter(8000.0, sampleRate);
+    delayProcessor->setFirFilter(8000.0, sampleRate);
     // *lowPassFilter.state = *dsp::FilterDesign<float>::designFIRLowpassWindowMethod(freq, getSampleRate(), 21, dsp::WindowingFunction<float>::hamming);
 }
 
@@ -289,7 +284,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleDelayLineAudioProcesso
 
     params.push_back(std::make_unique<juce::AudioParameterBool>("convolutionToggle", "Convolution Enabled", true));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("delay", "Delay", 0.0f, 22100.0f, 0.1f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("delayMix", "Delay Mix", 0.0f, 1.0f, 0.5f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("distance", "Distance", 0.1f, 20.0f, 1.0f));
     params.push_back(std::make_unique<juce::AudioParameterInt>("interpolationType", "DelayLineInterpolationType", 0, 2, 0));
 

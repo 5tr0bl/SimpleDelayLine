@@ -3,6 +3,8 @@ import os
 #import plotly.graph_objects as go
 import pyfar as pf
 
+sample_rate = 48000
+
 def find_input_reference(wav_file_path, path_references):
     wav_prefix = os.path.basename(wav_file_path).split('_')[0]
     for ref_filename in os.listdir(path_references):
@@ -35,6 +37,9 @@ def process_and_plot_wav(wav_file_path): #, plot_path):
                                                              path_references=path_references))
     input_signal = pf.io.read_audio(input_reference_path)
     
+    if input_signal.sampling_rate != sample_rate:
+        pf.dsp.resample(input_signal, sample_rate)
+
     # Pad zeros to the shorter signal to make both signals have the same length
     max_length = max(output_signal.n_samples, input_signal.n_samples)
     if output_signal.n_samples < max_length:

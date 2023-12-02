@@ -3,9 +3,9 @@ import pyfar as pf
 
 resources = "C:\Studium\TU Berlin\Virtuelle Akustik\Resources"
 sample_rate = 48000
-dirac = pf.signals.deterministic.impulse(sample_rate, sampling_rate=sample_rate)
-pf.io.write_audio(dirac, resources + "\dirac_1s_48k.wav")
-#exp_sweep = pf.signals.exponential_sweep_time(48000, [20, 20000])
+#dirac = pf.signals.deterministic.impulse(sample_rate, sampling_rate=sample_rate)
+#pf.io.write_audio(dirac, resources + "\dirac_1s_48k.wav")
+#exp_sweep = pf.signals.exponential_sweep_time(sample_rate, [20, 20000])
 #pf.io.write_audio(exp_sweep, resources + "\sweep_exp_48k.wav")
 #pulsed_noise_white = pf.signals.pulsed_noise(48000, 24000, repetitions=3, rms=0.7, spectrum='white', sampling_rate=48000)
 #pf.io.write_audio(pulsed_noise_white, resources + "\pulsed_noise_white_48k.wav")

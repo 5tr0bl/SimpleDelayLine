@@ -112,10 +112,10 @@ void SimpleDelayLineAudioProcessor::prepareToPlay (double sampleRate, int sample
 
     interpolationType = DEFAULT_INTERPOLATION_INDEX;
 
-    juce::File irFileFrontal("C:\\Users\\Micha\\source\\repos\\SimpleDelayLine\\Resources\\hrir_frontal.wav");
+    irFileFrontal = "C:\\Users\\Micha\\source\\repos\\SimpleDelayLine\\Resources\\hrir_frontal.wav";
     bool a = irFileFrontal.existsAsFile();
 
-    juce::File irFileLateral("C:\\Users\\Micha\\source\\repos\\SimpleDelayLine\\Resources\\hrir_lateral.wav");
+    irFileLateral = "C:\\Users\\Micha\\source\\repos\\SimpleDelayLine\\Resources\\hrir_lateral.wav";
     bool c = irFileLateral.existsAsFile();
     
     initDelayProcessors(sampleRate, spec, interpolationType);
@@ -220,7 +220,14 @@ void SimpleDelayLineAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 void SimpleDelayLineAudioProcessor::updateDelayTime(double sampleRate) 
 {
     float delay = *tree.getRawParameterValue("delay");
+    // only delay of the reflection (delay) processor gets modified
     delayProcessor->setDelayTimeInSamples(delay, sampleRate);
+}
+
+void SimpleDelayLineAudioProcessor::updateDistance()
+{
+    float distanceGUI = *tree.getRawParameterValue("distance");
+
 }
 
 void SimpleDelayLineAudioProcessor::updateInterpolationType() {
@@ -229,7 +236,6 @@ void SimpleDelayLineAudioProcessor::updateInterpolationType() {
     {
         interpolationType = interpolationTypeGUI;
         initDelayProcessors(getSampleRate(), spec, interpolationType);
-        // call each DelayProcessors setInterpolationType() 
     }
 }
 
@@ -284,8 +290,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleDelayLineAudioProcesso
 
     params.push_back(std::make_unique<juce::AudioParameterBool>("convolutionToggle", "Convolution Enabled", true));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("delay", "Delay", 0.0f, 22100.0f, 0.1f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("distance", "Distance", 0.1f, 20.0f, 1.0f));
-    params.push_back(std::make_unique<juce::AudioParameterInt>("interpolationType", "DelayLineInterpolationType", 0, 2, 0));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("distance", "Distance", 0.1f, 20.0f, 0.01f));
+    params.push_back(std::make_unique<juce::AudioParameterInt>("interpolationType", "DelayLineInterpolationType", 0, 2, DEFAULT_INTERPOLATION_INDEX));
 
     return {params.begin(), params.end()};
 }

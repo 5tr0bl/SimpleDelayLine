@@ -42,6 +42,7 @@ public:
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
     void updateDelayTime(double sampleRate);
+    void updateDistance();
     void updateFilter(double sampleRate);
     void SimpleDelayLineAudioProcessor::updateInterpolationType();
     void SimpleDelayLineAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue);

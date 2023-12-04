@@ -16,7 +16,7 @@
 
 DelayProcessor::DelayProcessor() {
     maxDelayTime = 2;
-    delayLine = juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd>();
+    //delayLine = juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd>();
     delayLineBase = std::make_unique<Lagrange3rdDelayLine>();
 }
 
@@ -39,6 +39,13 @@ DelayProcessor::DelayProcessor(double maxDelayTimeInSeconds, double sampleRate, 
 
 DelayProcessor::~DelayProcessor() {
     //delete delayLineBase->delayLine;
+}
+
+void DelayProcessor::setDistance(float newValue)
+{
+    distance = newValue;
+    // calculate new gain
+    gainFactor = 1.0f / distance;
 }
 
 void DelayProcessor::setFirFilter(double freq, double sampleRate) {
@@ -87,20 +94,20 @@ void DelayProcessor::setInterpolationType(int comboBoxChoice, juce::dsp::Process
 
 void DelayProcessor::setDelayTime(double delayTimeInSeconds, double sampleRate) {
     double clampedDelayTime = juce::jlimit(0.0, maxDelayTime, delayTimeInSeconds);
-    delayLine.setDelay(clampedDelayTime * sampleRate);
+    //delayLine.setDelay(clampedDelayTime * sampleRate);
     delayLineBase->setDelay(clampedDelayTime * sampleRate);
     currentDelayTime = clampedDelayTime; // in seconds
 }
 
 void DelayProcessor::setDelayTimeInSamples(float delayTimeInSamples, double sampleRate) {
     // double clampedDelayTimeInSamples = juce::jlimit(0.0, maxDelayTime * sampleRate, delayTimeInSamples * sampleRate);
-    delayLine.setDelay(delayTimeInSamples);
+    //delayLine.setDelay(delayTimeInSamples);
     delayLineBase->setDelay(delayTimeInSamples);
     currentDelayInSamples = delayTimeInSamples;
 }
 
 void DelayProcessor::setMaxDelayTime(double maxDelayTimeInSeconds, double sampleRate) {
-    delayLine.setMaximumDelayInSamples(sampleRate * maxDelayTimeInSeconds);
+    //delayLine.setMaximumDelayInSamples(sampleRate * maxDelayTimeInSeconds);
     delayLineBase->setMaximumDelayInSamples(sampleRate * maxDelayTimeInSeconds);
     maxDelayTime = maxDelayTimeInSeconds;
 }

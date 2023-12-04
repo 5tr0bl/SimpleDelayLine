@@ -18,6 +18,7 @@ public:
     DelayProcessor::DelayProcessor(double maxDelayTimeInSeconds, double sampleRate, int interpolationType);
     DelayProcessor::~DelayProcessor();
 
+    void DelayProcessor::setDistance(float newValue);
     void DelayProcessor::setFirFilter(double freq, double sampleRate);
     void DelayProcessor::setHRIR(const juce::File& impulseResponse);
     void DelayProcessor::setInterpolationType(int comboBoxChoice, juce::dsp::ProcessSpec& spec);
@@ -36,20 +37,9 @@ public:
         return currentDelayInSamples;
     }
 
-    void DelayProcessor::setMix(float newValue)
+    float DelayProcessor::getGainFactor() const
     {
-        mix = newValue;
-    }
-
-    float DelayProcessor::getMix() const
-    {
-        return mix;
-    }
-
-    void DelayProcessor::setDistance(float newValue, const float sonicSpeed, double sampleRate)
-    {
-        distance = newValue;
-        setDelayTime(static_cast<double>(distance/sonicSpeed), sampleRate);
+        return gainFactor;
     }
 
     float DelayProcessor::getDistance() const
@@ -65,7 +55,7 @@ private:
     double maxDelayTime;
     float currentDelayInSamples;
     double currentDelayTime; // in seconds
-    float distance, mix;
+    float distance, gainFactor;
 
     juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd> delayLine;
     std::unique_ptr<DelayLineBase> delayLineBase;

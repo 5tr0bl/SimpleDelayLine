@@ -41,14 +41,6 @@ SimpleDelayLineAudioProcessorEditor::SimpleDelayLineAudioProcessorEditor (Simple
             });
     };
     */
-    delaySlider.setSliderStyle(Slider::SliderStyle::LinearHorizontal);
-    delaySlider.setRange(audioProcessor.delayTimeRange.start, audioProcessor.delayTimeRange.end, audioProcessor.delayTimeRange.interval);
-    delaySlider.setValue(100);
-    delaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, delaySlider.getWidth() * 0.3f, 25); // check the last two values!! 
-    //delaySlider.setPopupDisplayEnabled(true, true, this);
-    addAndMakeVisible(delaySlider);
-    delaySliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(tree, "delay", delaySlider);
-
     convolutionButton.setClickingTogglesState(true);
     //convolutionButton.setToggleable(true);
     convolutionButton.onClick = [this]() {};
@@ -56,6 +48,21 @@ SimpleDelayLineAudioProcessorEditor::SimpleDelayLineAudioProcessorEditor (Simple
     convolutionButton.setEnabled(false);
     addAndMakeVisible(convolutionButton);
     convolutionButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(tree, "convolutionToggle", convolutionButton);
+
+    delaySlider.setSliderStyle(Slider::SliderStyle::LinearHorizontal);
+    delaySlider.setRange(audioProcessor.delayTimeRange.start, audioProcessor.delayTimeRange.end, audioProcessor.delayTimeRange.interval);
+    delaySlider.setValue(100);
+    delaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, delaySlider.getWidth() * 0.5f, 25); // check the last two values!! 
+    delaySlider.setTextValueSuffix(" samples");
+    //delaySlider.setPopupDisplayEnabled(true, true, this);
+    addAndMakeVisible(delaySlider);
+    delaySliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(tree, "delay", delaySlider);
+
+    distanceSlider.setSliderStyle(Slider::SliderStyle::LinearHorizontal);
+    distanceSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, distanceSlider.getWidth() * 0.3f, 25); // check the last two values!!
+    distanceSlider.setTextValueSuffix(" m");
+    addAndMakeVisible(distanceSlider);
+    distanceSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(tree, "distance", distanceSlider);
 
     interpolationTypeComboBox.addItemList({ "Linear", "Thiran", "Lagrange3rd"}, 1);
     interpolationTypeComboBox.setSelectedItemIndex(2);
@@ -86,7 +93,8 @@ void SimpleDelayLineAudioProcessorEditor::resized()
 {
     auto width = getWidth();
     auto height = getHeight();
-    // Load IR Button bounds
+
+    // Load IR Button bounds; IR Button not rendered at the moment
     const auto btnX = width * 0.7;
     const auto btnY = width * 0.3;
     const auto btnWidth = width * 0.3;
@@ -94,12 +102,20 @@ void SimpleDelayLineAudioProcessorEditor::resized()
     loadBtn.setBounds(btnX, btnY, btnWidth, btnHeight);
 
     // delay slider bounds
-    const auto delSliX = 0;
-    const auto delSliY = 0;
     const auto delSliWidth = width * 0.5;
     const auto delSliHeight = delSliWidth * 0.5;
-    delaySlider.setBounds(delSliX, delSliY, delSliWidth, delSliHeight);
+    delaySlider.setBounds(0,
+                          0,
+                          delSliWidth,
+                          delSliHeight);
 
+    // distance slider
+    distanceSlider.setBounds(0,
+                             delSliHeight,
+                             width * 0.5,
+                             width * 0.25);
+
+    // convolution toggler
     const auto convBtnX = width * 0.7;
     const auto convBtnY = 0;
     const auto convBtnWidth = width * 0.3;

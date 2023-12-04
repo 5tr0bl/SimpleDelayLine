@@ -1,3 +1,4 @@
+from matplotlib import pyplot as plt
 #import numpy as np
 import os
 #import plotly.graph_objects as go
@@ -25,9 +26,10 @@ def pad_length_mismatch(signal_a, signal_b):
     if signal_b.n_samples < max_length:
         pf.dsp.pad_zeros(signal_b, max_length - signal_b.n_samples)
         
-def process_and_plot_wav(wav_file_path): #, plot_path):
+def process_and_plot_wav(wav_file_path, plot_path):
     path_references = "Python\ReferenceInputs"
     file_path = os.path.splitext(os.path.basename(wav_file_path))[0]
+    plot_file_name = os.path.join(plot_path, file_path + '.png')
     print(f"Processing file: {file_path}")
 
     # Get signals as pyfar Signals
@@ -38,7 +40,7 @@ def process_and_plot_wav(wav_file_path): #, plot_path):
     input_signal = pf.io.read_audio(input_reference_path)
     
     if input_signal.sampling_rate != sample_rate:
-        pf.dsp.resample(input_signal, sample_rate)
+        input_signal = pf.dsp.resample(input_signal, sample_rate)
 
     # Pad zeros to the shorter signal to make both signals have the same length
     max_length = max(output_signal.n_samples, input_signal.n_samples)
@@ -60,9 +62,15 @@ def process_and_plot_wav(wav_file_path): #, plot_path):
     transfer_function = input_signal_reg_inv * output_signal
 
     # graph plotting
-    pf.plot.freq(transfer_function)
+    ax = pf.plot.freq(transfer_function) # returns --> ax : matplotlib.pyplot.axes
+    #plt.savefig(ax)
     # plotting in 2D plane
     #pf.plot.two_d.freq_group_delay_2d(transfer_function)
+
+    plt.close() # close down to avoid plotting in the same fig over and over again
+    fig = ax.get_figure() # Get the figure from the existing axes
+    fig.suptitle(file_path, fontsize=16)
+    fig.savefig(plot_file_name, bbox_inches='tight')
 
 path_linear_measurements = "Python\Measurements\Linear"
 path_thiran_measurements = "Python\Measurements\Thiran"
@@ -74,9 +82,9 @@ path_lagrange_plots = "Python\Plots\Lagrange3rd"
 plots_paths = [path_linear_plots, path_thiran_plots, path_lagrange_plots]
 
 # single measurement plotting 
-#process_and_plot_wav("Python\Measurements\Linear\dirac_0.0samples_linear.wav")
-#process_and_plot_wav("Python\Measurements\Thiran\dirac_0.0samples_thiran.wav")
-#process_and_plot_wav("Python\Measurements\Lagrange3rd\dirac_0.0samples_lagrange.wav")
+#process_and_plot_wav("Python\Measurements\Linear\dirac_0.5samples_check.wav")
+#process_and_plot_wav("Python\Measurements\Thiran\dirac_0.5samples_check.wav")
+#process_and_plot_wav("Python\Measurements\Lagrange3rd\dirac_0.5samples_check.wav")
 
 # loop over all measurements
 for measurement_path, plot_path in zip(measurement_paths, plots_paths):
@@ -92,4 +100,4 @@ for measurement_path, plot_path in zip(measurement_paths, plots_paths):
             print(f"Processing file: {wav_file_path}")
 
             # Process and plot the wav file
-            process_and_plot_wav(wav_file_path) #, plot_path)
+            process_and_plot_wav(wav_file_path, plot_path)

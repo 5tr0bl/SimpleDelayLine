@@ -12,6 +12,7 @@
             file="Resources/hrir_lateral.wav"/>
     </GROUP>
     <GROUP id="{E22DD196-8BFA-BF72-4843-579CA40B6E0D}" name="Source">
+      <FILE id="BouqpP" name="Vec2.h" compile="0" resource="0" file="Source/Vec2.h"/>
       <FILE id="DSSSXX" name="DelayLineBase.h" compile="0" resource="0" file="Source/DelayLineBase.h"/>
       <FILE id="PnkeHj" name="DelayProcessor.h" compile="0" resource="0"
             file="Source/DelayProcessor.h"/>

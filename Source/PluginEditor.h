@@ -27,16 +27,23 @@ public:
 private:
     SimpleDelayLineAudioProcessor& audioProcessor;
     juce::AudioProcessorValueTreeState& tree; // Reference to the processor's tree
+
+    juce::TextButton topArea, topLeftArea, topRightArea, bottomArea;
+    juce::Label gainDirectLabel, gainDelayLabel, distancePhantomSourceLabel, angleToPhantomSourceLabel;
     
-    juce::TextButton loadBtn;
+    //juce::TextButton loadBtn;
     juce::ToggleButton convolutionButton;
+    juce::ToggleButton directSoundToggle;
+    juce::ToggleButton delayedSoundToggle;
     juce::Slider delaySlider;
     juce::Slider distanceSlider;
     juce::ComboBox interpolationTypeComboBox;
 
 
-    std::unique_ptr<juce::FileChooser> fileChooser;
+    //std::unique_ptr<juce::FileChooser> fileChooser;
     std::unique_ptr<AudioProcessorValueTreeState::ButtonAttachment> convolutionButtonAttachment;
+    std::unique_ptr<AudioProcessorValueTreeState::ButtonAttachment> directSoundToggleAttachment;
+    std::unique_ptr<AudioProcessorValueTreeState::ButtonAttachment> delayedSoundToggleAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> delaySliderAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment> distanceSliderAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> interpolationTypeComboBoxAttachment;

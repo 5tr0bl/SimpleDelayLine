@@ -41,13 +41,30 @@ SimpleDelayLineAudioProcessorEditor::SimpleDelayLineAudioProcessorEditor (Simple
             });
     };
     */
+
+    addAndMakeVisible(topArea);
+    addAndMakeVisible(topLeftArea);
+    addAndMakeVisible(topRightArea);
+    addAndMakeVisible(bottomArea);
+
     convolutionButton.setClickingTogglesState(true);
-    //convolutionButton.setToggleable(true);
     convolutionButton.onClick = [this]() {};
     convolutionButton.setButtonText("Enable Convolution");
     convolutionButton.setEnabled(false);
     addAndMakeVisible(convolutionButton);
     convolutionButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(tree, "convolutionToggle", convolutionButton);
+
+    directSoundToggle.setClickingTogglesState(true);
+    directSoundToggle.onClick = [this]() {};
+    directSoundToggle.setButtonText("Direct Sound On");
+    addAndMakeVisible(directSoundToggle);
+    directSoundToggleAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(tree, "directSoundToggle", directSoundToggle);
+
+    delayedSoundToggle.setClickingTogglesState(true);
+    delayedSoundToggle.onClick = [this]() {};
+    delayedSoundToggle.setButtonText("Delayed Sound On");
+    addAndMakeVisible(delayedSoundToggle);
+    delayedSoundToggleAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(tree, "delayedSoundToggle", delayedSoundToggle);
 
     delaySlider.setSliderStyle(Slider::SliderStyle::LinearHorizontal);
     delaySlider.setRange(audioProcessor.delayTimeRange.start, audioProcessor.delayTimeRange.end, audioProcessor.delayTimeRange.interval);
@@ -91,15 +108,26 @@ void SimpleDelayLineAudioProcessorEditor::paint (juce::Graphics& g)
 
 void SimpleDelayLineAudioProcessorEditor::resized()
 {
+    auto area = getLocalBounds();
     auto width = getWidth();
     auto height = getHeight();
 
-    // Load IR Button bounds; IR Button not rendered at the moment
-    const auto btnX = width * 0.7;
-    const auto btnY = width * 0.3;
-    const auto btnWidth = width * 0.3;
-    const auto btnHeight = btnWidth * 0.5;
-    loadBtn.setBounds(btnX, btnY, btnWidth, btnHeight);
+    auto topAreaHeight = height * 0.75;
+    auto bottomAreaHeight = height * 0.25;
+    auto topLeftAreaWidth = width * 0.7;
+    auto topRightAreaWidth = width * 0.3;
+
+    /*
+    topArea.setBounds(area.removeFromTop(topAreaHeight));
+    bottomArea.setBounds(area.removeFromBottom(bottomAreaHeight));
+    auto topLeftAreaBounds  = area.removeFromLeft(topLeftAreaWidth);
+    auto topRightAreaBounds = area.removeFromRight(topRightAreaWidth);
+    topLeftArea.setBounds(topLeftAreaBounds);
+    topRightArea.setBounds(topRightAreaBounds);
+
+    delaySlider.setBounds(topLeftAreaBounds.removeFromTop(topLeftAreaBounds.getHeight() / 2));
+    distanceSlider.setBounds(topLeftAreaBounds.removeFromTop(topLeftAreaBounds.getHeight() / 2));
+    */
 
     // delay slider bounds
     const auto delSliWidth = width * 0.5;
@@ -115,15 +143,19 @@ void SimpleDelayLineAudioProcessorEditor::resized()
                              width * 0.5,
                              width * 0.25);
 
-    // convolution toggler
-    const auto convBtnX = width * 0.7;
-    const auto convBtnY = 0;
-    const auto convBtnWidth = width * 0.3;
-    const auto convBtnHeight = convBtnWidth;
-    convolutionButton.setBounds(convBtnX, convBtnY, convBtnWidth, convBtnHeight);
-
-    interpolationTypeComboBox.setBounds(285,
-                                        100,
-                                        105,
-                                        35);
+    // Top Right Area
+    convolutionButton.setBounds(topLeftAreaWidth, 0, topRightAreaWidth, 50);
+    directSoundToggle.setBounds(topLeftAreaWidth, 50, topRightAreaWidth, 50);
+    delayedSoundToggle.setBounds(topLeftAreaWidth, 100, topRightAreaWidth, 50);
+    interpolationTypeComboBox.setBounds(topLeftAreaWidth, 150, 105, 35);
+    
+    
+    /*
+    // Load IR Button bounds; IR Button not rendered at the moment
+    const auto btnX = width * 0.7;
+    const auto btnY = width * 0.3;
+    const auto btnWidth = width * 0.3;
+    const auto btnHeight = btnWidth * 0.5;
+    loadBtn.setBounds(btnX, btnY, btnWidth, btnHeight);
+    */
 }

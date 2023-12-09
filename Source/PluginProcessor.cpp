@@ -10,6 +10,7 @@
 #include "PluginEditor.h"
 #include "DelayProcessor.h"
 
+
 //==============================================================================
 SimpleDelayLineAudioProcessor::SimpleDelayLineAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -119,9 +120,6 @@ void SimpleDelayLineAudioProcessor::prepareToPlay (double sampleRate, int sample
     bool c = irFileLateral.existsAsFile();
     
     initDelayProcessors(sampleRate, spec, interpolationType);
-
-    //convolver.reset();
-    //convolver.prepare(spec);
 }
 
 void SimpleDelayLineAudioProcessor::initDelayProcessors(double sampleRate, juce::dsp::ProcessSpec& spec,
@@ -130,12 +128,16 @@ void SimpleDelayLineAudioProcessor::initDelayProcessors(double sampleRate, juce:
     directProcessor = std::make_unique<DelayProcessor>(MAX_DELAY, sampleRate, interpolationType);
     delayProcessor = std::make_unique<DelayProcessor>(MAX_DELAY, sampleRate, interpolationType);
 
+    directProcessor->setPosition(DEFAULT_LISTENER_POSITION); // always resets to the same default position !!!  
+    directProcessor->setDistance(DEFAULT_SOURCE_POSITION);
     directProcessor->setMaxDelayTime(MAX_DELAY, sampleRate);
     directProcessor->setFirFilter(20000.0, sampleRate);
     directProcessor->setDelayTimeInSamples(0, sampleRate);
     directProcessor->setHRIR(irFileFrontal);
     directProcessor->prepare(spec);
 
+    delayProcessor->setPosition(DEFAULT_PHANTOM_SOURCE_POSITION); // always resets to the same default position !!!  
+    delayProcessor->setDistance(DEFAULT_LISTENER_POSITION);
     delayProcessor->setMaxDelayTime(MAX_DELAY, sampleRate);
     delayProcessor->setFirFilter(DEFAULT_CUTOFF, sampleRate);
     delayProcessor->setDelayTimeInSamples(DEFAULT_DELAY_IN_SAMPLES, sampleRate);
@@ -176,13 +178,17 @@ bool SimpleDelayLineAudioProcessor::isBusesLayoutSupported (const BusesLayout& l
 
 void SimpleDelayLineAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    updateInterpolationType(); // maybe better do this early on
-
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     double sampleRate = getSampleRate();
     auto numSamples = buffer.getNumSamples();
+
+    updateInterpolationType(); // maybe better do this early on
+    updateDistance();
+    updateDelayTime(sampleRate);
+    bool directSoundEnabled = *tree.getRawParameterValue("directSoundToggle");
+    bool delayedSoundEnabled = *tree.getRawParameterValue("delayedSoundToggle");
 
     juce::dsp::AudioBlock<float> inputBlock(buffer);
     auto directContext = dsp::ProcessContextReplacing<float>(inputBlock);
@@ -198,15 +204,13 @@ void SimpleDelayLineAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 
     juce::dsp::AudioBlock<float> delayBlock(delayBuffer);
     auto delayedContext = dsp::ProcessContextReplacing<float>(delayBlock);
-
-    updateDelayTime(sampleRate);
+ 
     directProcessor->process(directContext);
+    inputBlock.multiplyBy(directSoundEnabled ? directProcessor->getGainFactor() : 0.0f);
+    
     delayProcessor->process(delayedContext);
+    delayBlock.multiplyBy(delayedSoundEnabled ? delayProcessor->getGainFactor() : 0.0f);
 
-    //// Add this when mixing between the two is desired
-    // float mixLevel = delayProcessor.getMix();
-    // delayBlock.multiplyBy(mixLevel);     
-    // inputBlock.multiplyBy(1.0f - mixLevel);
     inputBlock.add(delayBlock);
 
     //// Is convolution toggling is desired, this parameter now needs to be passed down to the DelayProcessors
@@ -227,7 +231,9 @@ void SimpleDelayLineAudioProcessor::updateDelayTime(double sampleRate)
 void SimpleDelayLineAudioProcessor::updateDistance()
 {
     float distanceGUI = *tree.getRawParameterValue("distance");
-
+    directProcessor->setPosition(0, distanceGUI); // Listener moves on a straight line towards source
+    directProcessor->setDistance(DEFAULT_SOURCE_POSITION);
+    delayProcessor->setDistance(directProcessor->position);
 }
 
 void SimpleDelayLineAudioProcessor::updateInterpolationType() {
@@ -289,8 +295,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleDelayLineAudioProcesso
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back(std::make_unique<juce::AudioParameterBool>("convolutionToggle", "Convolution Enabled", true));
+    params.push_back(std::make_unique<juce::AudioParameterBool>("directSoundToggle", "Direct Sound On", true));
+    params.push_back(std::make_unique<juce::AudioParameterBool>("delayedSoundToggle", "Delayed Sound On", true));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("delay", "Delay", 0.0f, 22100.0f, 0.1f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("distance", "Distance", 0.1f, 20.0f, 0.01f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("distance", "Distance", 1.0f, 5.0f, 0.01f));
     params.push_back(std::make_unique<juce::AudioParameterInt>("interpolationType", "DelayLineInterpolationType", 0, 2, DEFAULT_INTERPOLATION_INDEX));
 
     return {params.begin(), params.end()};

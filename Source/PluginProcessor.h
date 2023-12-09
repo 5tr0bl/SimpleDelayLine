@@ -10,12 +10,16 @@
 
 #include <JuceHeader.h>
 #include "DelayProcessor.h"
+#include "Vec2.h"
 
-const float SONIC_SPEED = 343.0f;
-const double MAX_DELAY = 2;
-const float DEFAULT_DELAY_IN_SAMPLES = 100;
 const double DEFAULT_CUTOFF = 3000.0;
+const float DEFAULT_DELAY_IN_SAMPLES = 100;
 const int DEFAULT_INTERPOLATION_INDEX = 2;
+const Vec2 DEFAULT_LISTENER_POSITION(0, 5);
+const Vec2 DEFAULT_SOURCE_POSITION(0, 0);
+const Vec2 DEFAULT_PHANTOM_SOURCE_POSITION(5, 0);
+const double MAX_DELAY = 2;
+const float SONIC_SPEED = 343.0f;
 
 
 //==============================================================================

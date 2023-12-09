@@ -41,11 +41,22 @@ DelayProcessor::~DelayProcessor() {
     //delete delayLineBase->delayLine;
 }
 
-void DelayProcessor::setDistance(float newValue)
+void DelayProcessor::setPosition(float newX, float newY)
 {
-    distance = newValue;
+    position.x = newX;
+    position.y = newY;
+}
+
+void DelayProcessor::setPosition(const Vec2& newPos)
+{
+    position = newPos;
+}
+
+void DelayProcessor::setDistance(const Vec2& sourceLocation)
+{
+    distance = position.distanceTo(sourceLocation);
     // calculate new gain
-    gainFactor = 1.0f / distance;
+    gainFactor = std::clamp(1.0f / distance, 0.0f, 1.0f);
 }
 
 void DelayProcessor::setFirFilter(double freq, double sampleRate) {

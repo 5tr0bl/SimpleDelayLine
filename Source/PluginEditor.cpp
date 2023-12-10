@@ -50,7 +50,6 @@ SimpleDelayLineAudioProcessorEditor::SimpleDelayLineAudioProcessorEditor (Simple
     convolutionButton.setClickingTogglesState(true);
     convolutionButton.onClick = [this]() {};
     convolutionButton.setButtonText("Enable Convolution");
-    convolutionButton.setEnabled(false);
     addAndMakeVisible(convolutionButton);
     convolutionButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(tree, "convolutionToggle", convolutionButton);
 

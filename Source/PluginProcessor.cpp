@@ -189,6 +189,7 @@ void SimpleDelayLineAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     updateDelayTime(sampleRate);
     bool directSoundEnabled = *tree.getRawParameterValue("directSoundToggle");
     bool delayedSoundEnabled = *tree.getRawParameterValue("delayedSoundToggle");
+    updateConvolutionState();
 
     juce::dsp::AudioBlock<float> inputBlock(buffer);
     auto directContext = dsp::ProcessContextReplacing<float>(inputBlock);
@@ -219,6 +220,17 @@ void SimpleDelayLineAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     {
         convolver.process(directContext);
     }*/
+}
+
+void SimpleDelayLineAudioProcessor::updateConvolutionState()
+{
+    bool convolutionEnabledGUI = *tree.getRawParameterValue("convolutionToggle");
+    if (convolutionEnabledGUI != convolutionEnabled)
+    {
+        convolutionEnabled = convolutionEnabledGUI;
+        directProcessor->convolutionEnabled = convolutionEnabledGUI;
+        delayProcessor->convolutionEnabled = convolutionEnabledGUI;
+    }
 }
 
 void SimpleDelayLineAudioProcessor::updateDelayTime(double sampleRate) 

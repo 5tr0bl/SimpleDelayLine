@@ -143,5 +143,6 @@ void DelayProcessor::process(juce::dsp::ProcessContextReplacing<float>& context)
     delayLineBase->process(context);
     //delayLine.process(context);
     filter.process(context);
-    convolver.process(context);
+    if(convolutionEnabled)
+        convolver.process(context);
 }

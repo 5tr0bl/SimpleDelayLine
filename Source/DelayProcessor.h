@@ -53,6 +53,7 @@ public:
     //std::unique_ptr<juce::dsp::ProcessorDuplicator<dsp::FIR::Filter<float>, dsp::FIR::Coefficients<float>>> lowPassFilter;
     juce::dsp::ProcessorDuplicator<dsp::FIR::Filter<float>, dsp::FIR::Coefficients<float>> filter;
     juce::dsp::Convolution convolver;
+    bool convolutionEnabled = true;
 
     Vec2 position;
 

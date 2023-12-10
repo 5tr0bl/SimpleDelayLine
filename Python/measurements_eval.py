@@ -63,7 +63,6 @@ def process_and_plot_wav(wav_file_path, plot_path):
 
     # graph plotting
     ax = pf.plot.freq(transfer_function) # returns --> ax : matplotlib.pyplot.axes
-    #plt.savefig(ax)
     # plotting in 2D plane
     #pf.plot.two_d.freq_group_delay_2d(transfer_function)
 
@@ -72,32 +71,28 @@ def process_and_plot_wav(wav_file_path, plot_path):
     fig.suptitle(file_path, fontsize=16)
     fig.savefig(plot_file_name, bbox_inches='tight')
 
-path_linear_measurements = "Python\Measurements\Linear"
-path_thiran_measurements = "Python\Measurements\Thiran"
-path_lagrange_measurements = "Python\Measurements\Lagrange3rd"
-measurement_paths = [path_linear_measurements, path_thiran_measurements, path_lagrange_measurements]
-path_linear_plots = "Python\Plots\Linear"
-path_thiran_plots = "Python\Plots\Thiran"
-path_lagrange_plots = "Python\Plots\Lagrange3rd"
-plots_paths = [path_linear_plots, path_thiran_plots, path_lagrange_plots]
+measurement_paths = []
+#measurement_paths.append("Python\Measurements\Linear")
+#measurement_paths.append("Python\Measurements\Thiran")
+#measurement_paths.append("Python\Measurements\Lagrange3rd")
+#measurement_paths.append("Python\Measurements\Dirac_NoConv_Lagrange3rd")
+#measurement_paths.append("Python\Measurements\SeparatedSources_Lagrange3rd")
 
-# single measurement plotting 
-#process_and_plot_wav("Python\Measurements\Linear\dirac_0.5samples_check.wav")
-#process_and_plot_wav("Python\Measurements\Thiran\dirac_0.5samples_check.wav")
-#process_and_plot_wav("Python\Measurements\Lagrange3rd\dirac_0.5samples_check.wav")
+plots_paths = []
+#plots_paths.append("Python\Plots\Linear")
+#plots_paths.append("Python\Plots\Thiran")
+#plots_paths.append("Python\Plots\Lagrange3rd")
+#plots_paths.append("Python\Plots\Dirac_NoConv_Lagrange3rd")
+#plots_paths.append("Python\Plots\SeparatedSources_Lagrange3rd")
 
 # loop over all measurements
 for measurement_path, plot_path in zip(measurement_paths, plots_paths):
     print(f"Processing files in {measurement_path}:")
-    
     # Create the plots folder if it doesn't exist
     os.makedirs(plot_path, exist_ok=True)
 
-    # Iterate over the .wav files in the directory
     for filename in os.listdir(measurement_path):
         if filename.endswith(".wav"):
             wav_file_path = os.path.join(measurement_path, filename)
             print(f"Processing file: {wav_file_path}")
-
-            # Process and plot the wav file
             process_and_plot_wav(wav_file_path, plot_path)

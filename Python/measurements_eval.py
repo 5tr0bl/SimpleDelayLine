@@ -61,10 +61,9 @@ def process_and_plot_wav(wav_file_path, plot_path):
     # H = (1/X) * Y
     transfer_function = input_signal_reg_inv * output_signal
 
-    # graph plotting
+    # plotting
     ax = pf.plot.freq(transfer_function) # returns --> ax : matplotlib.pyplot.axes
-    # plotting in 2D plane
-    #pf.plot.two_d.freq_group_delay_2d(transfer_function)
+    #ax = pf.plot.group_delay(transfer_function)
 
     plt.close() # close down to avoid plotting in the same fig over and over again
     fig = ax.get_figure() # Get the figure from the existing axes
@@ -75,20 +74,19 @@ measurement_paths = []
 #measurement_paths.append("Python\Measurements\Linear")
 #measurement_paths.append("Python\Measurements\Thiran")
 #measurement_paths.append("Python\Measurements\Lagrange3rd")
-#measurement_paths.append("Python\Measurements\Dirac_NoConv_Lagrange3rd")
+measurement_paths.append("Python\Measurements\Dirac_NoConv_Lagrange3rd")
 #measurement_paths.append("Python\Measurements\SeparatedSources_Lagrange3rd")
 
 plots_paths = []
 #plots_paths.append("Python\Plots\Linear")
 #plots_paths.append("Python\Plots\Thiran")
 #plots_paths.append("Python\Plots\Lagrange3rd")
-#plots_paths.append("Python\Plots\Dirac_NoConv_Lagrange3rd")
+plots_paths.append("Python\Plots\Dirac_NoConv_Lagrange3rd")
 #plots_paths.append("Python\Plots\SeparatedSources_Lagrange3rd")
 
 # loop over all measurements
 for measurement_path, plot_path in zip(measurement_paths, plots_paths):
     print(f"Processing files in {measurement_path}:")
-    # Create the plots folder if it doesn't exist
     os.makedirs(plot_path, exist_ok=True)
 
     for filename in os.listdir(measurement_path):

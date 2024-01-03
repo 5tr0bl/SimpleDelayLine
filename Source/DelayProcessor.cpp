@@ -18,6 +18,7 @@ DelayProcessor::DelayProcessor() {
     maxDelayTime = 2;
     //delayLine = juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd>();
     delayLineBase = std::make_unique<Lagrange3rdDelayLine>();
+    position = juce::Vector3D<float>(0, 0, 0);
 }
 
 DelayProcessor::DelayProcessor(double maxDelayTimeInSeconds, double sampleRate, int interpolationType) :
@@ -35,26 +36,29 @@ DelayProcessor::DelayProcessor(double maxDelayTimeInSeconds, double sampleRate, 
     
     setMaxDelayTime(maxDelayTimeInSeconds, sampleRate);
     *filter.state = *dsp::FilterDesign<float>::designFIRLowpassWindowMethod(20000.0, sampleRate, 21, dsp::WindowingFunction<float>::hamming);
+    position = juce::Vector3D<float>(0, 0, 0);
 }
 
 DelayProcessor::~DelayProcessor() {
     //delete delayLineBase->delayLine;
 }
 
-void DelayProcessor::setPosition(float newX, float newY)
+void DelayProcessor::setPosition(float newX, float newY, float newZ)
 {
     position.x = newX;
     position.y = newY;
+    position.z = newZ;
 }
 
-void DelayProcessor::setPosition(const Vec2& newPos)
+void DelayProcessor::setPosition(const juce::Vector3D<float>& newPos)
 {
     position = newPos;
 }
 
-void DelayProcessor::setDistance(const Vec2& sourceLocation)
+void DelayProcessor::setDistance(const juce::Vector3D<float>& sourceLocation)
 {
-    distance = position.distanceTo(sourceLocation);
+    distance = (position - sourceLocation).length();
+
     // calculate new gain
     gainFactor = std::clamp(1.0f / distance, 0.0f, 1.0f);
 }

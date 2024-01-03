@@ -11,7 +11,6 @@
 #pragma once
 #include <JuceHeader.h>
 #include "DelayLineBase.h"
-#include "Vec2.h"
 
 class DelayProcessor {
 public:
@@ -19,9 +18,9 @@ public:
     DelayProcessor::DelayProcessor(double maxDelayTimeInSeconds, double sampleRate, int interpolationType);
     DelayProcessor::~DelayProcessor();
 
-    void DelayProcessor::setPosition(float newX, float newY);
-    void DelayProcessor::setPosition(const Vec2& newPosition);
-    void DelayProcessor::setDistance(const Vec2& sourceLocation);
+    void DelayProcessor::setPosition(float newX, float newY, float newZ);
+    void DelayProcessor::setPosition(const juce::Vector3D<float>& newPos);
+    void DelayProcessor::setDistance(const juce::Vector3D<float>& sourceLocation);
     void DelayProcessor::setFirFilter(double freq, double sampleRate);
     void DelayProcessor::setHRIR(const juce::File& impulseResponse);
     void DelayProcessor::setInterpolationType(int comboBoxChoice, juce::dsp::ProcessSpec& spec); // obsolete
@@ -55,7 +54,7 @@ public:
     juce::dsp::Convolution convolver;
     bool convolutionEnabled = true;
 
-    Vec2 position;
+    juce::Vector3D<float> position;
 
 private:
     double maxDelayTime;

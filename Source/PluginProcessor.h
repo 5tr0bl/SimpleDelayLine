@@ -10,15 +10,15 @@
 
 #include <JuceHeader.h>
 #include "DelayProcessor.h"
-#include "Vec2.h"
 
 const double DEFAULT_CUTOFF = 4000.0;
 const float DEFAULT_DELAY_IN_SAMPLES = 0.1f;
 const int DEFAULT_INTERPOLATION_INDEX = 2;
-const Vec2 DEFAULT_LISTENER_POSITION(0, 5);
-const Vec2 DEFAULT_SOURCE_POSITION(0, 0);
-const Vec2 DEFAULT_PHANTOM_SOURCE_POSITION(5, 0);
+const juce::Vector3D DEFAULT_LISTENER_POSITION(0.0f, 5.0f, 0.0f);
+const juce::Vector3D DEFAULT_SOURCE_POSITION(0.0f, 0.0f, 0.0f);
+const juce::Vector3D DEFAULT_PHANTOM_SOURCE_POSITION(5.0f, 0.0f, 0.0f);
 const double MAX_DELAY = 2;
+const float MAX_MOVING_SPEED = 30.0f; // in m/s
 const float SONIC_SPEED = 343.0f;
 
 
@@ -46,6 +46,7 @@ public:
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
     void SimpleDelayLineAudioProcessor::updateConvolutionState();
+    void SimpleDelayLineAudioProcessor::updateDelayTimeRamped(double sampleRate, float numSamples);
     void updateDelayTime(double sampleRate);
     void updateDistance();
     void updateFilter(double sampleRate);
@@ -93,6 +94,8 @@ private:
     //DelayProcessor delayProcessor;
     std::unique_ptr<DelayProcessor> directProcessor;
     std::unique_ptr<DelayProcessor> delayProcessor;
+
+    LinearSmoothedValue<float> delaySmoothed;
 
     juce::File irFileFrontal, irFileLateral;
     bool convolutionEnabled = true;

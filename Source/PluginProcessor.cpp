@@ -114,12 +114,12 @@ void SimpleDelayLineAudioProcessor::prepareToPlay (double sampleRate, int sample
     interpolationType = DEFAULT_INTERPOLATION_INDEX;
 
     irFileFrontal = "C:\\Users\\Micha\\source\\repos\\SimpleDelayLine\\Resources\\hrir_frontal.wav";
-    bool a = irFileFrontal.existsAsFile();
-
     irFileLateral = "C:\\Users\\Micha\\source\\repos\\SimpleDelayLine\\Resources\\hrir_lateral.wav";
-    bool c = irFileLateral.existsAsFile();
     
     initDelayProcessors(sampleRate, spec, interpolationType);
+    delaySmoothed.reset(sampleRate, 1); // rampLength = ?? 
+    // also maybe put these in initDelayProcessors()
+    delaySmoothed.setCurrentAndTargetValue(DEFAULT_DELAY_IN_SAMPLES);
 }
 
 void SimpleDelayLineAudioProcessor::initDelayProcessors(double sampleRate, juce::dsp::ProcessSpec& spec,
@@ -128,7 +128,7 @@ void SimpleDelayLineAudioProcessor::initDelayProcessors(double sampleRate, juce:
     directProcessor = std::make_unique<DelayProcessor>(MAX_DELAY, sampleRate, interpolationType);
     delayProcessor = std::make_unique<DelayProcessor>(MAX_DELAY, sampleRate, interpolationType);
 
-    directProcessor->setPosition(DEFAULT_LISTENER_POSITION); // always resets to the same default position !!!  
+    directProcessor->setPosition(DEFAULT_LISTENER_POSITION); // always resets to the same default position !!!  fix
     directProcessor->setDistance(DEFAULT_SOURCE_POSITION);
     directProcessor->setMaxDelayTime(MAX_DELAY, sampleRate);
     directProcessor->setFirFilter(20000.0, sampleRate);
@@ -136,7 +136,7 @@ void SimpleDelayLineAudioProcessor::initDelayProcessors(double sampleRate, juce:
     directProcessor->setHRIR(irFileFrontal);
     directProcessor->prepare(spec);
 
-    delayProcessor->setPosition(DEFAULT_PHANTOM_SOURCE_POSITION); // always resets to the same default position !!!  
+    delayProcessor->setPosition(DEFAULT_PHANTOM_SOURCE_POSITION); // always resets to the same default position !!!  fix
     delayProcessor->setDistance(DEFAULT_LISTENER_POSITION);
     delayProcessor->setMaxDelayTime(MAX_DELAY, sampleRate);
     delayProcessor->setFirFilter(DEFAULT_CUTOFF, sampleRate);
@@ -186,7 +186,8 @@ void SimpleDelayLineAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 
     updateInterpolationType(); // maybe better do this early on
     updateDistance();
-    updateDelayTime(sampleRate);
+    //updateDelayTime(sampleRate);
+    updateDelayTimeRamped(sampleRate, numSamples);
     bool directSoundEnabled = *tree.getRawParameterValue("directSoundToggle");
     bool delayedSoundEnabled = *tree.getRawParameterValue("delayedSoundToggle");
     updateConvolutionState();
@@ -213,13 +214,6 @@ void SimpleDelayLineAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     delayBlock.multiplyBy(delayedSoundEnabled ? delayProcessor->getGainFactor() : 0.0f);
 
     inputBlock.add(delayBlock);
-
-    //// Is convolution toggling is desired, this parameter now needs to be passed down to the DelayProcessors
-    /*bool convolutionEnabled = *tree.getRawParameterValue("convolutionToggle");
-    if (convolutionEnabled && convolver.getCurrentIRSize() > 0)
-    {
-        convolver.process(directContext);
-    }*/
 }
 
 void SimpleDelayLineAudioProcessor::updateConvolutionState()
@@ -233,17 +227,56 @@ void SimpleDelayLineAudioProcessor::updateConvolutionState()
     }
 }
 
-void SimpleDelayLineAudioProcessor::updateDelayTime(double sampleRate) 
+void SimpleDelayLineAudioProcessor::updateDelayTimeRamped(double sampleRate, float numSamples)
+{
+    // based on https://git.iem.at/audioplugins/IEMPluginSuite/-/blob/master/RoomEncoder/Source/PluginProcessor.cpp?ref_type=heads l.538
+    float delayGUI = *tree.getRawParameterValue("delay");
+    
+    //const float maxDist = MAX_MOVING_SPEED / sampleRate * numSamples; // according to IEM
+    const float maxDiff = sampleRate / SONIC_SPEED * MAX_MOVING_SPEED;
+
+    // compare lastDelay and newDelay (of every DelayProcessor)
+    auto lastDelay = delayProcessor->getDelayTimeInSamples(sampleRate); // maybe save this within the DelayProcessor
+    auto diff = delayGUI - lastDelay;
+    if (diff <= maxDiff)
+    {
+        delayProcessor->setDelayTimeInSamples(delayGUI, sampleRate);
+    }
+    else 
+    {
+        float newDelay = lastDelay + maxDiff;
+        delayProcessor->setDelayTimeInSamples(newDelay, sampleRate);
+    }
+}
+
+void SimpleDelayLineAudioProcessor::updateDelayTime(double sampleRate) // Maybe obsolete
 {
     float delay = *tree.getRawParameterValue("delay");
+
+    // this is wrong. after starting the ramp the ramps current value will not have reached the GUI delay value 
+    if(delay != delaySmoothed.getCurrentValue()) 
+    {
+    // if gap between oldDelay & newDelay is too big
+    // 
+    // set the ramp length reasonably with reset()
+        delaySmoothed.reset(sampleRate, 1);
+    // set target value (first reset or first setTargetValue?)
+        delaySmoothed.setTargetValue(delay); 
+    }
+
+    {
+        delaySmoothed.setCurrentAndTargetValue(delay); // if it falls under "walking pace"; newDelay-oldDelay = small    
+    }
+
     // only delay of the reflection (delay) processor gets modified
     delayProcessor->setDelayTimeInSamples(delay, sampleRate);
+    // delayProcessor->setDelayTimeInSamples(delaySmoothed.getNextValue(), sampleRate);
 }
 
 void SimpleDelayLineAudioProcessor::updateDistance()
 {
     float distanceGUI = *tree.getRawParameterValue("distance");
-    directProcessor->setPosition(0, distanceGUI); // Listener moves on a straight line towards source
+    directProcessor->setPosition(0, distanceGUI, 0); // Listener moves on a straight line (y-Axis) towards source
     directProcessor->setDistance(DEFAULT_SOURCE_POSITION);
     delayProcessor->setDistance(directProcessor->position);
 }
@@ -257,7 +290,7 @@ void SimpleDelayLineAudioProcessor::updateInterpolationType() {
     }
 }
 
-void SimpleDelayLineAudioProcessor::updateFilter(double sampleRate)
+void SimpleDelayLineAudioProcessor::updateFilter(double sampleRate) // unused right now
 {
     //float freq = *tree.getRawParameterValue("cutoff");
     delayProcessor->setFirFilter(8000.0, sampleRate);
